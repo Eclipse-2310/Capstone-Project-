@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In to Your Account — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<div style="max-width:480px; margin:var(--space-8) auto;">
+  <div class="panel">
+    <div style="text-align:center; margin-bottom:var(--space-6);">
+      <span class="badge" style="margin-bottom:var(--space-2);">CUSTOMER &amp; STAFF PORTAL</span>
+      <h1 style="font-size:1.75rem; margin-top:var(--space-1); margin-bottom:var(--space-1);">Sign In to Your Account</h1>
+      <p style="color:var(--text-muted); font-size:0.875rem;">
+        Access your orders, track delivery milestones in real-time, and manage your shopping cart.
+      </p>
+    </div>
+
+    <form method="POST" action="/login">
+      <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label for="email">Account Email</label>
+        <input type="email" id="email" name="email" class="form-control"
+               placeholder="name@sjcem.edu.in" required autofocus>
+      </div>
+
+      <div class="form-group" style="margin-bottom:var(--space-6);">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="Enter your password" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; padding:var(--space-3); font-size:0.9375rem;">
+        Sign In to Your Account
+      </button>
+    </form>
+
+    <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-light); font-size:0.875rem; text-align:center;">
+      <p style="margin-bottom:var(--space-3);">
+        New customer? <a href="/register"><strong>Create an account</strong></a>
+      </p>
+
+      <!-- Account Benefits Strip -->
+      <div style="background-color:var(--bg-subtle); padding:var(--space-3); border:1px solid var(--border-light); font-size:0.8125rem; color:var(--text-muted); text-align:left; line-height:1.6; margin-bottom:var(--space-4);">
+        <strong style="color:var(--text-main); display:block; margin-bottom:4px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">
+          Account Features
+        </strong>
+        <div>&bull; Real-time delivery milestone tracking</div>
+        <div>&bull; Persistent shopping cart across visits</div>
+        <div>&bull; Access complete order history and receipts</div>
+      </div>
+
+      <!-- Demo Credentials Quick-Reference -->
+      <div style="background-color:var(--bg-subtle); padding:var(--space-3); border:1px solid var(--border-medium); font-size:0.75rem; color:var(--text-muted); text-align:left; font-family:var(--font-mono);">
+        <strong style="color:var(--text-main); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;">
+          Demo System Credentials
+        </strong>
+        <div>STUDENT: <code>125anant6027@sjcem.edu.in</code> // <code>student123</code></div>
+        <div>STAFF:   <code>admin@sjcem.edu.in</code> // <code>admin123</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

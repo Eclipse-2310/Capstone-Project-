@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% from "product_schematic.html" import render_schematic %}
+
+{% block title %}{{ product.name }} — Hardware Specifications{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:var(--space-4);">
+  <a href="/" style="font-family:var(--font-mono); font-size:0.8125rem; letter-spacing:0.04em; text-transform:uppercase;">
+    Return to Catalogue
+  </a>
+</div>
+
+<div class="panel" style="max-width:920px; margin:0 auto;">
+  <div style="display:grid; grid-template-columns:1fr 1.15fr; gap:var(--space-8); align-items:flex-start;">
+    
+    <!-- Authentic Technical Schematic Plate -->
+    <div>
+      <div style="border:1px solid var(--border-medium); background-color:var(--bg-subtle); padding:var(--space-8) var(--space-6); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:280px; margin-bottom:var(--space-4);">
+        <div style="position:absolute; top:var(--space-3); left:var(--space-3); font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-subtle);">
+          SPECIFICATION RECORD #{{ "%03d"|format(product.id) }}
+        </div>
+        <div style="position:absolute; top:var(--space-3); right:var(--space-3); font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-subtle);">
+          INDEXED: B-TREE
+        </div>
+
+        <div style="width:100%; max-width:200px; margin:var(--space-4) 0;">
+          {{ render_schematic(product.id, product.name) }}
+        </div>
+
+        <div style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">
+          WAREHOUSE SEC-04 // BIN #{{ "%02d"|format(product.id) }}
+        </div>
+      </div>
+
+      <!-- Trust & Service Guarantees -->
+      <div style="border:1px solid var(--border-light); background-color:var(--bg-surface); padding:var(--space-4); font-size:0.8125rem; line-height:1.6;">
+        <div style="font-family:var(--font-mono); font-size:0.6875rem; font-weight:700; text-transform:uppercase; color:var(--text-main); margin-bottom:var(--space-2);">
+          Store Guarantees
+        </div>
+        <div style="color:var(--text-muted); margin-bottom:var(--space-1);">&bull; <strong>Authenticity:</strong> 100% Genuine Certified Hardware</div>
+        <div style="color:var(--text-muted); margin-bottom:var(--space-1);">&bull; <strong>Shipping:</strong> Free Domestic Dispatch via FIFO Queue</div>
+        <div style="color:var(--text-muted);">&bull; <strong>Settlement:</strong> Cash on Delivery (Inspect upon arrival)</div>
+      </div>
+    </div>
+
+    <!-- Inventory & Purchasing Specifications -->
+    <div>
+      <div style="display:flex; gap:var(--space-2); margin-bottom:var(--space-2);">
+        <span class="badge">HARDWARE COMPONENT</span>
+        <span class="badge">SKU-{{ "%03d"|format(product.id) }}</span>
+      </div>
+
+      <h1 style="font-size:1.875rem; margin-bottom:var(--space-2);">{{ product.name }}</h1>
+
+      <div style="font-family:var(--font-mono); font-size:1.75rem; font-weight:700; margin-bottom:var(--space-4); color:var(--text-main);">
+        Rs {{ "%.2f"|format(product.price) }}
+      </div>
+
+      <div style="margin-bottom:var(--space-6); padding:var(--space-4); background-color:var(--bg-subtle); border:1px solid var(--border-medium);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:var(--font-mono); font-size:0.75rem; text-transform:uppercase; color:var(--text-muted);">
+            Warehouse Stock Status
+          </span>
+          {% if product.stock > 0 %}
+            <span class="stock-tag stock-available">{{ product.stock }} units available</span>
+          {% else %}
+            <span class="stock-tag stock-out">Out of stock</span>
+          {% endif %}
+        </div>
+
+        {% if current_in_cart > 0 %}
+          <div style="font-size:0.8125rem; color:var(--text-muted); margin-top:var(--space-2); padding-top:var(--space-2); border-top:1px solid var(--border-light);">
+            In Your Active Cart: <strong>{{ current_in_cart }}</strong> unit(s) allocated to your session stack.
+          </div>
+        {% endif %}
+      </div>
+
+      {% if product.stock > 0 %}
+        <form method="POST" action="/cart/add">
+          <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+
+          <div class="form-group" style="margin-bottom:var(--space-5);">
+            <label for="quantity">Select Quantity (Units)</label>
+            <input type="number" id="quantity" name="quantity" class="form-control"
+                   min="1" max="{{ product.stock - current_in_cart }}" value="1" required
+                   {% if product.stock - current_in_cart <= 0 %}disabled{% endif %}>
+            
+            {% if product.stock - current_in_cart <= 0 %}
+              <div style="color:var(--accent-alert); font-size:0.8125rem; margin-top:var(--space-1);">
+                Maximum available inventory is already allocated to your cart stack.
+              </div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:var(--space-3); font-size:0.9375rem;"
+                  {% if product.stock - current_in_cart <= 0 %}disabled{% endif %}>
+            Add to Shopping Cart
+          </button>
+        </form>
+      {% else %}
+        <button class="btn btn-secondary" style="width:100%; opacity:0.5; cursor:not-allowed;" disabled>
+          Temporarily Out of Stock
+        </button>
+      {% endif %}
+
+      <!-- Technical Specifications Sheet -->
+      <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-light);">
+        <h3 style="font-size:0.875rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:var(--space-3);">
+          Technical Equipment Data
+        </h3>
+        <table style="font-size:0.8125rem;">
+          <tbody>
+            <tr>
+              <td style="color:var(--text-muted); width:40%;">Equipment Model</td>
+              <td><strong>{{ product.name }}</strong></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted);">Database Identifier</td>
+              <td style="font-family:var(--font-mono);">Record #{{ product.id }}</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted);">Inventory Unit Cost</td>
+              <td style="font-family:var(--font-mono);">Rs {{ "%.2f"|format(product.price) }}</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted);">Dispatch Routing</td>
+              <td>Warehouse FIFO Queue</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

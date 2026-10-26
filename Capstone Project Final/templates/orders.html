@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Your Account &amp; Orders Hub — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<section style="max-width:1100px; margin:0 auto;">
+  <!-- Customer Profile Header Card -->
+  <div class="account-profile-header">
+    <div>
+      <div style="display:flex; gap:var(--space-2); align-items:center; margin-bottom:var(--space-2);">
+        <span class="badge" style="background-color:var(--accent-inventory); color:var(--text-inverse); border:none;">
+          {% if session.get('user_role') == 'admin' %}STAFF ADMINISTRATOR{% else %}VERIFIED CUSTOMER{% endif %}
+        </span>
+        <span class="badge">CUSTOMER #{{ session.get('user_id') }}</span>
+      </div>
+      <h1 style="font-size:1.875rem; margin-bottom:var(--space-1);">{{ session.get('user_name') }}</h1>
+      <div style="font-family:var(--font-mono); font-size:0.8125rem; color:var(--text-muted);">
+        Account Email: <strong>{{ session.get('user_email') }}</strong>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:var(--space-3); align-items:center;">
+      <a href="/cart" class="btn btn-secondary">
+        View Cart ({{ cart_count|default(0) }})
+      </a>
+      <a href="/logout" class="btn btn-secondary" style="color:var(--accent-alert);">
+        Sign Out
+      </a>
+    </div>
+  </div>
+
+  <!-- Famous E-Commerce Feature Hub Cards -->
+  <div class="account-hub-grid">
+    <!-- Card 1: Your Orders -->
+    <a href="#orders-manifest" class="account-card">
+      <span class="account-card-badge">ORDER HISTORY</span>
+      <h3 class="account-card-title">Your Orders &amp; Invoices</h3>
+      <p class="account-card-desc">
+        Track active shipments in real-time, inspect itemized invoices, or cancel placed orders prior to packing.
+      </p>
+      <div class="account-card-action">
+        {{ orders|length }} Recorded Order(s) &darr;
+      </div>
+    </a>
+
+    <!-- Card 2: Shopping Cart -->
+    <a href="/cart" class="account-card">
+      <span class="account-card-badge">ACTIVE CART</span>
+      <h3 class="account-card-title">Shopping Cart (LIFO Stack)</h3>
+      <p class="account-card-desc">
+        Manage items allocated to your session stack, reverse recent additions, or proceed to checkout.
+      </p>
+      <div class="account-card-action">
+        {{ cart_count|default(0) }} Items in Cart &rarr;
+      </div>
+    </a>
+
+    <!-- Card 3: Security & Credentials -->
+    <div class="account-card" style="cursor:default;">
+      <span class="account-card-badge">AUTHENTICATION</span>
+      <h3 class="account-card-title">Login &amp; Security</h3>
+      <p class="account-card-desc">
+        Protected with PBKDF2-SHA256 password hashing (100,000 rounds) and session CSRF verification.
+      </p>
+      <div class="account-card-action" style="color:var(--accent-inventory);">
+        Secured with SQLite ACID
+      </div>
+    </div>
+
+    <!-- Card 4: Delivery Terms -->
+    <div class="account-card" style="cursor:default;">
+      <span class="account-card-badge">SETTLEMENT TERMS</span>
+      <h3 class="account-card-title">Delivery &amp; Payment</h3>
+      <p class="account-card-desc">
+        Standard express delivery on campus with verified Cash on Delivery (Pay on Delivery) upon arrival.
+      </p>
+      <div class="account-card-action" style="color:var(--accent-dispatch);">
+        Pay on Delivery Verified
+      </div>
+    </div>
+
+    <!-- Card 5: Shop Hardware Catalogue -->
+    <a href="/" class="account-card">
+      <span class="account-card-badge">CATALOGUE</span>
+      <h3 class="account-card-title">Hardware Storefront</h3>
+      <p class="account-card-desc">
+        Browse certified laptops, mechanical keyboards, monitors, audio gear, and solid-state storage.
+      </p>
+      <div class="account-card-action">
+        Browse 10 Products &rarr;
+      </div>
+    </a>
+
+    <!-- Card 6: Staff Console (if Admin) -->
+    {% if session.get('user_role') == 'admin' %}
+      <a href="/admin/queue" class="account-card" style="border-color:var(--accent-inventory);">
+        <span class="account-card-badge" style="color:var(--accent-inventory);">STAFF PRIVILEGES</span>
+        <h3 class="account-card-title">Warehouse Dispatch Line</h3>
+        <p class="account-card-desc">
+          Inspect the FIFO dispatch queue, advance orders via round-robin, and monitor physical inventory stock.
+        </p>
+        <div class="account-card-action" style="color:var(--accent-inventory);">
+          Open Dispatch Line &rarr;
+        </div>
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Orders Manifest Table Section -->
+  <div id="orders-manifest" class="context-header" style="margin-top:var(--space-8);">
+    <div>
+      <h2 style="font-size:1.375rem; margin-bottom:var(--space-1);">Your Orders Ledger</h2>
+      <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:0;">
+        Personal purchase records, item specifications, and singly linked list milestone progression.
+      </p>
+    </div>
+    <div class="context-header-meta">
+      ACCOUNT: {{ session.get('user_email') }}
+    </div>
+  </div>
+
+  {% if orders %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order Record</th>
+            <th>Placed Timestamp</th>
+            <th style="text-align:right;">Total Amount</th>
+            <th>Milestone Status</th>
+            <th style="text-align:center;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td style="font-family:var(--font-mono); font-weight:700;">#{{ order.order_id }}</td>
+              <td style="color:var(--text-muted); font-size:0.8125rem; font-family:var(--font-mono);">{{ order.created_at }}</td>
+              <td style="text-align:right; font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;">
+                Rs {{ "%.2f"|format(order.total_amount) }}
+              </td>
+              <td>
+                <span class="badge badge-{{ order.status|lower|replace(' ', '') }}">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td style="text-align:center;">
+                <a href="/orders/{{ order.order_id }}" class="btn btn-secondary" style="padding:2px 10px; font-size:0.75rem; min-height:28px;">
+                  Inspect &amp; Track
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>No Orders Placed Yet</h3>
+      <p>Your customer account currently has zero recorded orders. Visit our hardware catalogue to make a selection.</p>
+      <a href="/" class="btn btn-primary">Browse Catalogue</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

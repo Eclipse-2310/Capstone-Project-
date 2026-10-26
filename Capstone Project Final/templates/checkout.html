@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout &amp; Order Placement — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<section>
+  <div class="context-header">
+    <div>
+      <h1>Checkout &amp; Delivery Review</h1>
+      <p style="color:var(--text-muted); margin-bottom:0;">
+        Review your delivery destination and equipment manifest. Submitting commits an atomic SQL transaction to allocate warehouse stock.
+      </p>
+    </div>
+  </div>
+
+  <div class="commerce-split-layout">
+    <!-- Main Checkout Form & Steps -->
+    <div>
+      <!-- Step 1: Customer & Delivery Details -->
+      <div class="panel" style="margin-bottom:var(--space-6);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3); border-bottom:1px solid var(--border-light); padding-bottom:var(--space-2);">
+          <h2 style="font-size:1.1875rem;">1. Delivery Destination</h2>
+          <span class="badge" style="background-color:var(--accent-inventory); color:var(--text-inverse); border:none;">VERIFIED ACCOUNT</span>
+        </div>
+        <div style="font-size:0.875rem; line-height:1.7;">
+          <div><strong>Recipient:</strong> {{ session.get('user_name') }}</div>
+          <div><strong>Email Address:</strong> {{ session.get('user_email') }}</div>
+          <div><strong>Delivery Address:</strong> Campus &amp; Residence Express Delivery (Confirmed on Dispatch)</div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Method -->
+      <div class="panel" style="margin-bottom:var(--space-6);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3); border-bottom:1px solid var(--border-light); padding-bottom:var(--space-2);">
+          <h2 style="font-size:1.1875rem;">2. Payment Method</h2>
+          <span class="badge">SECURE TERMS</span>
+        </div>
+        <div style="padding:var(--space-3); background-color:var(--bg-subtle); border:1px solid var(--border-medium); border-radius:var(--radius-xs);">
+          <strong style="display:block; font-size:0.875rem; margin-bottom:4px;">Cash on Delivery (Pay on Delivery)</strong>
+          <p style="font-size:0.8125rem; color:var(--text-muted); margin-bottom:0;">
+            Inspect your hardware equipment upon arrival before making payment. No advance card information required.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3: Manifest Line Items Table -->
+      <div class="panel">
+        <h2 style="font-size:1.1875rem; margin-bottom:var(--space-3); border-bottom:1px solid var(--border-light); padding-bottom:var(--space-2);">
+          3. Items Manifest
+        </h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hardware Specification</th>
+                <th style="text-align:right;">Unit Price</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Line Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cart_items %}
+                <tr>
+                  <td>
+                    <strong>{{ item.name }}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">
+                      SKU-{{ "%03d"|format(item.id) }}
+                    </div>
+                  </td>
+                  <td style="text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(item.price) }}</td>
+                  <td style="text-align:center; font-family:var(--font-mono);">{{ item.quantity }}</td>
+                  <td style="text-align:right; font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;">
+                    Rs {{ "%.2f"|format(item.price * item.quantity) }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Back Link -->
+      <div style="margin-top:var(--space-4);">
+        <a href="/cart" class="btn btn-secondary">Return to Cart</a>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Order Total & Submit CTA -->
+    <aside class="order-summary-box">
+      <h3 style="font-size:1.125rem; margin-bottom:var(--space-4); border-bottom:1px solid var(--border-light); padding-bottom:var(--space-3);">
+        Payment Summary
+      </h3>
+
+      <div class="summary-row">
+        <span>Equipment Subtotal</span>
+        <span style="font-family:var(--font-mono); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(total_price) }}</span>
+      </div>
+
+      <div class="summary-row">
+        <span>Delivery &amp; Handling</span>
+        <span style="font-family:var(--font-mono); color:var(--accent-inventory);">Free</span>
+      </div>
+
+      <div class="summary-row summary-total">
+        <span>Total Due</span>
+        <span style="font-family:var(--font-mono); color:var(--text-main); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(total_price) }}</span>
+      </div>
+
+      <form method="POST" action="/checkout" style="margin-top:var(--space-6);">
+        <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:var(--space-3); font-size:0.9375rem;">
+          Place Order Now
+        </button>
+      </form>
+
+      <div style="margin-top:var(--space-4); padding-top:var(--space-4); border-top:1px solid var(--border-light); font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
+        By placing this order, you authorize inventory reservation in the warehouse database and entry into the milestone dispatch pipeline.
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

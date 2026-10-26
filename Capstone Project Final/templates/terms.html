@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Project — Dispatch & Inventory{% endblock %}
+
+{% block content %}
+<section style="max-width:800px; margin:0 auto;" class="panel">
+  <h1>Terms of Demonstration</h1>
+  <small style="color:var(--text-muted);">Last Updated: October 2026</small>
+
+  <div style="margin-top:var(--space-6);">
+    <h3>1. Purpose of the System</h3>
+    <p>
+      The "E-Commerce Dispatch and Inventory Management" system is designed to demonstrate key Computer Science concepts:
+    </p>
+    <ul style="margin-left:var(--space-6); margin-bottom:var(--space-4);">
+      <li><strong>Data Structures:</strong> Stack (cart management and LIFO undo), Queue (FIFO warehouse dispatch line), Singly Linked List (order lifecycle milestones).</li>
+      <li><strong>Algorithms:</strong> Merge Sort (catalog price ordering in O(n log n)), Binary Search (product ID lookup in O(log n)), and Linear Substring Search.</li>
+      <li><strong>Database Management Systems:</strong> 3NF Relational Schema, ACID SQL Transactions, Foreign Key Constraints, and Database Migrations.</li>
+    </ul>
+
+    <h3>2. No Real Commercial Transactions</h3>
+    <p>
+      Product listings, prices, inventory counts, and order checkouts are simulated demonstrations. No real currency is charged, no physical hardware will be dispatched, and no payment gateway integration exists.
+    </p>
+
+    <h3>3. Order Lifecycle & Cancellation Policy</h3>
+    <p>
+      In accordance with realistic warehouse logistics logic, orders may be cancelled by the placing user only while in the <strong>Placed</strong> milestone. Once an order is processed into <strong>Packed</strong>, <strong>Dispatched</strong>, or <strong>Delivered</strong>, it represents physical material handling and cannot be cancelled.
+    </p>
+  </div>
+</section>
+{% endblock %}

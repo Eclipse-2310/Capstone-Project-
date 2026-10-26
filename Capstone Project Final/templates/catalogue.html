@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% from "product_schematic.html" import render_schematic %}
+
+{% block title %}Hardware &amp; Peripherals Catalogue — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<!-- E-Commerce Hero Section -->
+<section class="store-hero">
+  <div class="store-hero-eyebrow">PREMIUM COMPUTING GEAR // DISPATCH WAREHOUSE</div>
+  <h1 class="store-hero-title">Engineered Hardware &amp; Peripheral Equipment</h1>
+  <p class="store-hero-sub">
+    Discover high-performance computing systems, tactile mechanical input, high-definition displays, and rugged storage solutions — all backed by real-time inventory validation and guaranteed FIFO milestone dispatch.
+  </p>
+
+  <div class="store-features-strip">
+    <div class="feature-box">
+      <span class="feature-box-title">Real-Time Stock</span>
+      <span class="feature-box-desc">Inventory quantities updated live with ACID SQLite transaction guarantees.</span>
+    </div>
+    <div class="feature-box">
+      <span class="feature-box-title">Milestone Dispatch</span>
+      <span class="feature-box-desc">Sequential order traversal from Placed to Delivered in fair round-robin order.</span>
+    </div>
+    <div class="feature-box">
+      <span class="feature-box-title">Pay on Delivery</span>
+      <span class="feature-box-desc">Inspect your equipment on arrival before final settlement.</span>
+    </div>
+  </div>
+</section>
+
+<!-- Search & Algorithmic Filters Console -->
+<section>
+  <div class="context-header">
+    <div>
+      <h2 style="font-size:1.375rem; margin-bottom:var(--space-1);">Product Catalogue Index</h2>
+      <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:0;">
+        Filter catalogue by keyword, perform exact logarithmic ID lookup, or sort unit prices via merge sort.
+      </p>
+    </div>
+    <div class="context-header-meta">
+      DISPLAYING {{ products|length }} ITEM(S)
+    </div>
+  </div>
+
+  <div class="search-filter-panel">
+    <form method="GET" action="/" class="filter-grid">
+      <div class="form-group">
+        <label for="name_query">Search Equipment // Linear Search</label>
+        <input type="text" id="name_query" name="name" class="form-control"
+               placeholder="Search Laptop, Keyboard, Monitor..." value="{{ name_query|default('') }}">
+      </div>
+
+      <div class="form-group">
+        <label for="id_query">Product ID // Binary Search</label>
+        <input type="number" id="id_query" name="id" class="form-control"
+               placeholder="ID (1–10)" value="{{ id_query|default('') }}">
+      </div>
+
+      <div class="form-group">
+        <label for="sort_by">Price Ordering // Merge Sort</label>
+        <select id="sort_by" name="sort" class="form-control">
+          <option value="" {% if not sort_by %}selected{% endif %}>Standard Catalog Order</option>
+          <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:var(--space-2); align-items:flex-end;">
+        <div class="checkbox-group">
+          <input type="checkbox" id="in_stock" name="in_stock" value="1" {% if in_stock %}checked{% endif %}>
+          <label for="in_stock" style="text-transform:none; font-family:var(--font-body); font-size:0.8125rem; color:var(--text-main); font-weight:500;">In Stock</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        {% if name_query or id_query or sort_by or in_stock %}
+          <a href="/" class="btn btn-secondary">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Product Grid -->
+  {% if products %}
+    <div class="product-grid">
+      {% for product in products %}
+        <article class="product-card">
+          <div class="product-schematic-plate">
+            <span class="product-sku-tag">PRODUCT #{{ product.id }} // SKU-{{ "%03d"|format(product.id) }}</span>
+            <span class="product-category-mark">
+              {% if product.id in [1] %}COMPUTING
+              {% elif product.id in [2, 3] %}PERIPHERAL
+              {% elif product.id in [4] %}DISPLAY
+              {% elif product.id in [5] %}IMAGING
+              {% elif product.id in [6] %}OPTICS
+              {% elif product.id in [7, 8] %}AUDIO
+              {% else %}STORAGE
+              {% endif %}
+            </span>
+            {{ render_schematic(product.id, product.name) }}
+          </div>
+
+          <div class="product-info">
+            <h3 class="product-name" style="font-size:1.1875rem;">
+              <a href="/product/{{ product.id }}">{{ product.name }}</a>
+            </h3>
+
+            <div class="product-meta">
+              <span class="product-price">Rs {{ "%.2f"|format(product.price) }}</span>
+              {% if product.stock > 0 %}
+                <span class="stock-tag stock-available">{{ product.stock }} in stock</span>
+              {% else %}
+                <span class="stock-tag stock-out">Out of stock</span>
+              {% endif %}
+            </div>
+
+            <div style="margin-top:var(--space-4); display:flex; gap:var(--space-2);">
+              <a href="/product/{{ product.id }}" class="btn btn-secondary" style="flex:1;">View Details</a>
+              {% if product.stock > 0 %}
+                <form method="POST" action="/cart/add" style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+                  <input type="hidden" name="product_id" value="{{ product.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn btn-primary" title="Add 1 unit to cart stack" style="padding:var(--space-2) var(--space-3);">
+                    + Add
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>No Products Found</h3>
+      <p>No catalog items matched your search criteria. Try modifying your search keyword or clearing the active filters.</p>
+      <a href="/" class="btn btn-primary">Reset Filter Console</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

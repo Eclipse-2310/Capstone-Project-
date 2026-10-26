@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Warehouse Dispatch Line (FIFO Queue) — Staff Operations{% endblock %}
+
+{% block content %}
+<section style="max-width:980px; margin:0 auto;">
+  <div class="context-header">
+    <div>
+      <div style="display:flex; gap:var(--space-2); margin-bottom:var(--space-2);">
+        <span class="badge" style="background-color:var(--accent-inventory); color:var(--text-inverse); border:none;">STAFF OPERATIONS</span>
+        <span class="badge">FIFO QUEUE</span>
+      </div>
+      <h1 style="margin-bottom:var(--space-1);">Warehouse Dispatch Line</h1>
+      <p style="color:var(--text-muted); max-width:680px; margin-bottom:0;">
+        Managed via an in-memory <strong>FIFO Queue</strong> (using <code>collections.deque</code> for guaranteed O(1) operations).
+        Orders advance through linear stages via fair round-robin rotation.
+      </p>
+    </div>
+    <div class="context-header-meta">
+      QUEUE LENGTH: {{ queue_orders|length }} ACTIVE
+    </div>
+  </div>
+
+  {% if queue_orders %}
+    <!-- Head of Queue Action Card -->
+    <div class="panel" style="border:2px solid var(--border-strong); margin-bottom:var(--space-8);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4); flex-wrap:wrap; gap:var(--space-3);">
+        <div>
+          <span class="badge" style="border-color:var(--accent-dispatch); color:var(--accent-dispatch); margin-bottom:var(--space-1);">
+            FRONT OF QUEUE // NEXT DISPATCH ACTION
+          </span>
+          <h2 style="margin-top:var(--space-2); margin-bottom:var(--space-1);">Order #{{ queue_orders[0].order_id }}</h2>
+          <small style="color:var(--text-muted);">Customer: {{ queue_orders[0].customer_name }} ({{ queue_orders[0].email }})</small>
+        </div>
+        <div>
+          <span class="badge badge-{{ queue_orders[0].status|lower|replace(' ', '') }}" style="font-size:0.8125rem;">
+            Current Stage: {{ queue_orders[0].status }}
+          </span>
+        </div>
+      </div>
+
+      <div style="background-color:var(--bg-subtle); padding:var(--space-3); border:1px solid var(--border-light); margin-bottom:var(--space-4); font-size:0.8125rem; font-family:var(--font-mono);">
+        <span>TOTAL: Rs {{ "%.2f"|format(queue_orders[0].total_amount) }}</span> &bull;
+        <span>TIMESTAMP: {{ queue_orders[0].created_at }}</span>
+      </div>
+
+      <form method="POST" action="/admin/queue/advance">
+        <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:var(--space-3); font-size:0.9375rem;">
+          Advance Order to Next Stage (Round-Robin Rotation)
+        </button>
+      </form>
+    </div>
+
+    <!-- Full Queue Lineup Table -->
+    <h3 style="margin-bottom:var(--space-3); font-size:1.125rem;">Dispatch Pipeline Lineup</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Queue Position</th>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Current Stage</th>
+            <th style="text-align:right;">Amount</th>
+            <th style="text-align:center;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in queue_orders %}
+            <tr {% if loop.first %}style="background-color:#f6f8f6;"{% endif %}>
+              <td style="font-family:var(--font-mono); font-size:0.75rem;">
+                {% if loop.first %}
+                  <strong style="color:var(--accent-inventory);">1 [HEAD]</strong>
+                {% else %}
+                  {{ loop.index }}
+                {% endif %}
+              </td>
+              <td style="font-family:var(--font-mono); font-weight:700;">#{{ order.order_id }}</td>
+              <td>{{ order.customer_name }}</td>
+              <td>
+                <span class="badge badge-{{ order.status|lower|replace(' ', '') }}">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td style="text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums;">
+                Rs {{ "%.2f"|format(order.total_amount) }}
+              </td>
+              <td style="text-align:center;">
+                <a href="/orders/{{ order.order_id }}" class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem; min-height:28px;">
+                  Inspect
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Dispatch Queue is Idle</h3>
+      <p>There are currently no active orders in the warehouse queue. When customers place orders, they will appear here in strict FIFO order.</p>
+      <a href="/" class="btn btn-secondary">Return to Catalogue</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code }} — {{ error_title }}{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:600px; margin:var(--space-12) auto; text-align:center;">
+  <span class="badge" style="border-color:var(--accent-alert); color:var(--accent-alert); margin-bottom:var(--space-2);">
+    HTTP {{ error_code }}
+  </span>
+  <h1 style="font-size:1.875rem; margin-top:var(--space-2); margin-bottom:var(--space-2);">{{ error_title }}</h1>
+  <p style="color:var(--text-muted); margin-bottom:var(--space-6); font-size:0.9375rem;">
+    {{ error_message }}
+  </p>
+  <a href="/" class="btn btn-primary">Return to Catalogue</a>
+</div>
+{% endblock %}

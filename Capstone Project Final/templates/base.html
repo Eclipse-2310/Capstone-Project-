@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hardware Dispatch &amp; Inventory Management{% endblock %}</title>
+  <meta name="description" content="E-Commerce Dispatch and Inventory Management: High-performance computing equipment, input peripherals, and verified dispatch with real-time milestone tracking.">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="header-top-bar">
+      <span>HARDWARE DISPATCH &amp; INVENTORY // FREE DOMESTIC DISPATCH ON ALL ORDERS</span>
+      <span>VERIFIED REAL-TIME INVENTORY // SECURE PAY ON DELIVERY</span>
+    </div>
+
+    <div class="header-container">
+      <a href="/" class="brand">
+        <span class="brand-title">DISPATCH &amp; INVENTORY</span>
+        <span class="brand-badge">HARDWARE &amp; LOGISTICS</span>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="main-nav">
+          <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">Shop Catalogue</a></li>
+          
+          {% if session.get('user_id') %}
+            <li><a href="/orders" class="{% if request.path == '/orders' %}active{% endif %}">Your Account</a></li>
+            {% if session.get('user_role') == 'admin' %}
+              <li>
+                <a href="/admin/queue" class="{% if request.path.startswith('/admin/queue') %}active{% endif %}">
+                  Warehouse Queue <span class="nav-tag-staff">STAFF</span>
+                </a>
+              </li>
+              <li><a href="/admin/inventory" class="{% if request.path == '/admin/inventory' %}active{% endif %}">Stock Inventory</a></li>
+            {% endif %}
+          {% else %}
+            <li><a href="/login" class="{% if request.path == '/login' %}active{% endif %}">Sign In / Your Account</a></li>
+          {% endif %}
+
+          <li>
+            <a href="/cart" class="{% if request.path == '/cart' %}active{% endif %}">
+              Cart <span class="cart-counter-pill">{{ cart_count|default(0) }}</span>
+            </a>
+          </li>
+
+          {% if session.get('user_id') %}
+            <li><a href="/logout">Logout</a></li>
+          {% else %}
+            <li><a href="/register" class="{% if request.path == '/register' %}active{% endif %}">Register</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="main-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container" role="alert">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {% if category == 'success' %}
+                <span class="flash-tag">CONFIRMED</span>
+              {% elif category == 'error' %}
+                <span class="flash-tag">ALERT</span>
+              {% else %}
+                <span class="flash-tag">NOTICE</span>
+              {% endif %}
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <!-- Brand & Mission -->
+      <div>
+        <div class="brand" style="margin-bottom:var(--space-3);">
+          <span class="brand-title" style="font-size:1.35rem;">DISPATCH &amp; INVENTORY</span>
+          <span class="brand-badge">HARDWARE &amp; TECH</span>
+        </div>
+        <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.6; max-width:340px;">
+          Certified computing equipment, precision input devices, and reliable dispatch logistics. Backed by real-time warehouse inventory and sequential milestone tracking.
+        </p>
+      </div>
+
+      <!-- Catalogue Shortcuts -->
+      <div>
+        <h4 class="footer-col-title">Storefront</h4>
+        <ul class="footer-links">
+          <li><a href="/">All Products</a></li>
+          <li><a href="/?name=Laptop">Laptops &amp; Computing</a></li>
+          <li><a href="/?name=Keyboard">Keyboards &amp; Input</a></li>
+          <li><a href="/?name=Monitor">Displays &amp; Monitors</a></li>
+          <li><a href="/?name=Headphones">Audio &amp; Speakers</a></li>
+        </ul>
+      </div>
+
+      <!-- Account & Order Services -->
+      <div>
+        <h4 class="footer-col-title">Account &amp; Services</h4>
+        <ul class="footer-links">
+          {% if session.get('user_id') %}
+            <li><a href="/orders"><strong>Your Account Hub</strong></a></li>
+            <li><a href="/orders">Orders &amp; Tracking</a></li>
+            <li><a href="/cart">Shopping Cart ({{ cart_count|default(0) }})</a></li>
+            <li><a href="/logout">Sign Out</a></li>
+          {% else %}
+            <li><a href="/login"><strong>Sign In to Your Account</strong></a></li>
+            <li><a href="/register">Register New Account</a></li>
+            <li><a href="/cart">Shopping Cart</a></li>
+            <li><a href="/login">Track Guest Orders</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- Policies & System Info -->
+      <div>
+        <h4 class="footer-col-title">System &amp; Policies</h4>
+        <ul class="footer-links">
+          <li><a href="/privacy">Privacy Notice</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="/health">System Health API</a></li>
+          <li><span style="font-size:0.75rem; color:var(--text-subtle);">Academic Capstone Scope</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <span>&copy; 2026 DISPATCH &amp; INVENTORY MANAGEMENT. ALL RIGHTS RESERVED.</span>
+      <span>ACID SQLITE3 // FIFO DISPATCH LINE // LIFO STACK CART</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<section>
+  <div class="context-header">
+    <div>
+      <h1>Shopping Cart</h1>
+      <p style="color:var(--text-muted); margin-bottom:0;">
+        Review your selected equipment before proceeding to order checkout.
+      </p>
+    </div>
+    {% if cart_items %}
+      <form method="POST" action="/cart/undo">
+        <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+        <button type="submit" class="btn btn-secondary" title="Reverses the last item pushed to your cart stack">
+          Undo Last Added Item (Pop Stack)
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% if cart_items %}
+    <div class="commerce-split-layout">
+      <!-- Items List -->
+      <div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Stack Position</th>
+                <th>Hardware Item</th>
+                <th style="text-align:right;">Unit Price</th>
+                <th style="text-align:center;">Quantity</th>
+                <th style="text-align:right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cart_items %}
+                <tr>
+                  <td style="font-family:var(--font-mono); font-size:0.75rem;">
+                    {% if loop.first %}
+                      <span class="badge" style="border-color:var(--accent-dispatch); color:var(--accent-dispatch);">STACK TOP</span>
+                    {% else %}
+                      <span style="color:var(--text-muted);">LAYER #{{ loop.revindex }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>{{ item.name }}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">
+                      SKU-{{ "%03d"|format(item.id) }}
+                    </div>
+                  </td>
+                  <td style="text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums;">
+                    Rs {{ "%.2f"|format(item.price) }}
+                  </td>
+                  <td style="text-align:center; font-family:var(--font-mono); font-weight:600;">
+                    {{ item.quantity }}
+                  </td>
+                  <td style="text-align:right; font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;">
+                    Rs {{ "%.2f"|format(item.price * item.quantity) }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:var(--space-4);">
+          <a href="/" class="btn btn-secondary">Continue Shopping</a>
+
+          <form method="POST" action="/cart/clear">
+            <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Empty all items from your cart?');">
+              Clear Entire Cart
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <aside class="order-summary-box">
+        <h3 style="font-size:1.125rem; margin-bottom:var(--space-4); border-bottom:1px solid var(--border-light); padding-bottom:var(--space-3);">
+          Order Summary
+        </h3>
+
+        <div class="summary-row">
+          <span>Items Subtotal</span>
+          <span style="font-family:var(--font-mono); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(total_price) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Standard Dispatch</span>
+          <span style="font-family:var(--font-mono); color:var(--accent-inventory);">Free</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Estimated Taxes</span>
+          <span style="font-family:var(--font-mono); color:var(--text-muted);">Included</span>
+        </div>
+
+        <div class="summary-row summary-total">
+          <span>Grand Total</span>
+          <span style="font-family:var(--font-mono); color:var(--text-main); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(total_price) }}</span>
+        </div>
+
+        <div style="margin-top:var(--space-6);">
+          <a href="/checkout" class="btn btn-primary" style="width:100%; padding:var(--space-3); font-size:0.9375rem;">
+            Proceed to Checkout
+          </a>
+        </div>
+
+        <div style="margin-top:var(--space-4); padding-top:var(--space-4); border-top:1px solid var(--border-light); font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
+          <strong>Guaranteed Dispatch:</strong> Orders placed today are enqueued directly into the warehouse FIFO processing line.
+        </div>
+      </aside>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Your Shopping Cart is Empty</h3>
+      <p>You have not selected any hardware items yet. Browse our catalogue to find high-performance equipment.</p>
+      <a href="/" class="btn btn-primary">Browse Equipment Catalogue</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

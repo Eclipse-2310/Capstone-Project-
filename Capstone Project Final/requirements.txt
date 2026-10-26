@@ -1,0 +1,3 @@
+# Core dependencies for E-Commerce Dispatch and Inventory Management
+Flask==3.1.3
+pytest==9.1.1

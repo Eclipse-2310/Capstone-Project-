@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.order_id }} Invoice &amp; Milestone Tracking — Dispatch &amp; Inventory{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:var(--space-4);">
+  <a href="/orders" style="font-family:var(--font-mono); font-size:0.8125rem; letter-spacing:0.04em; text-transform:uppercase;">
+    Return to Orders Ledger
+  </a>
+</div>
+
+<section style="max-width:920px; margin:0 auto;">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <span class="badge" style="margin-bottom:var(--space-2);">DISPATCH INVOICE</span>
+        <h1 style="font-size:1.75rem; margin-bottom:var(--space-1);">Order Record #{{ order.order_id }}</h1>
+        <small style="font-family:var(--font-mono); color:var(--text-muted);">Timestamp: {{ order.created_at }}</small>
+      </div>
+      <div>
+        <span class="badge badge-{{ order.status|lower|replace(' ', '') }}" style="font-size:0.8125rem; padding:4px 10px;">
+          Status: {{ order.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Linked List Milestone Pipeline -->
+    {% if order.status == 'Cancelled' %}
+      <div class="panel" style="background-color:#fcf5f5; border-color:var(--accent-alert); margin:var(--space-6) 0;">
+        <div style="display:flex; gap:var(--space-2); align-items:center; margin-bottom:var(--space-1);">
+          <span class="badge" style="background-color:var(--accent-alert); color:var(--text-inverse); border:none;">CANCELLED</span>
+          <strong style="color:var(--accent-alert); font-size:0.875rem;">Order Cancelled: Inventory Restored</strong>
+        </div>
+        <p style="font-size:0.8125rem; color:var(--text-muted); margin-bottom:0;">
+          This order was cancelled while in the initial 'Placed' milestone. Warehouse inventory has been automatically returned to available stock via an atomic SQL transaction.
+        </p>
+      </div>
+    {% else %}
+      <div style="margin:var(--space-6) 0; padding:var(--space-5) 0; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
+          <h3 style="font-size:0.875rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">
+            Order Tracker (Singly Linked List Milestone Traversal)
+          </h3>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-subtle);">
+            NODE {{ order.current_stage_index + 1 }} OF {{ order.all_stages|length }}
+          </span>
+        </div>
+        
+        <div class="order-tracker-pipeline" aria-label="Order Tracking Milestones">
+          {% for stage in order.all_stages %}
+            {% set is_active = (stage == order.status) %}
+            {% set is_completed = (loop.index0 < order.current_stage_index) %}
+            {% set is_pending = (loop.index0 > order.current_stage_index) %}
+            
+            <div class="stage-step {% if is_active %}active{% elif is_completed %}completed{% else %}pending{% endif %}">
+              <div class="marker" aria-hidden="true">{{ "%02d"|format(loop.index) }}</div>
+              <div class="stage-label">{{ stage }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Line Items Table -->
+    <h3 style="font-size:1.125rem; margin-top:var(--space-6); margin-bottom:var(--space-3);">Manifest Line Items</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product Specification</th>
+            <th style="text-align:right;">Unit Price</th>
+            <th style="text-align:center;">Quantity</th>
+            <th style="text-align:right;">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.line_items %}
+            <tr>
+              <td><strong>{{ item.name }}</strong></td>
+              <td style="text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(item.price) }}</td>
+              <td style="text-align:center; font-family:var(--font-mono);">{{ item.quantity }}</td>
+              <td style="text-align:right; font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(item.subtotal) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-row summary-total">
+      <span>Grand Total:</span>
+      <span style="font-family:var(--font-mono); color:var(--text-main); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(order.total_amount) }}</span>
+    </div>
+
+    <!-- Cancellation Option -->
+    {% if order.is_cancellable %}
+      <div style="margin-top:var(--space-8); padding-top:var(--space-4); border-top:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-4);">
+        <div>
+          <strong style="color:var(--text-main); font-size:0.875rem;">Cancel this order?</strong>
+          <p style="font-size:0.8125rem; color:var(--text-muted); margin-bottom:0;">
+            Cancellation is permitted only while in the 'Placed' milestone prior to warehouse packing.
+          </p>
+        </div>
+        <form method="POST" action="/orders/{{ order.order_id }}/cancel" onsubmit="return confirm('Confirm cancellation of Order #{{ order.order_id }}? Reserved warehouse stock will be restored immediately.');">
+          <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+          <button type="submit" class="btn btn-danger">Cancel Order &amp; Restock</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

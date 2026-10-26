@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Notice — Dispatch & Inventory{% endblock %}
+
+{% block content %}
+<section style="max-width:800px; margin:0 auto;" class="panel">
+  <h1>Privacy Notice</h1>
+  <small style="color:var(--text-muted);">Last Updated: October 2026</small>
+
+  <div style="margin-top:var(--space-6);">
+    <h3>1. Academic Project Scope</h3>
+    <p>
+      This web application is built strictly as an educational Capstone Project for demonstration and viva evaluation.
+      It is not a commercial enterprise or public e-commerce store.
+    </p>
+
+    <h3>2. Information We Store</h3>
+    <p>
+      The application stores minimal user-provided information required to demonstrate database relationships and user authentication:
+    </p>
+    <ul style="margin-left:var(--space-6); margin-bottom:var(--space-4);">
+      <li>Full Name (for customer profiling and order invoice generation)</li>
+      <li>Email Address (used as the unique account identifier)</li>
+      <li>Cryptographic Password Hash (generated via PBKDF2-HMAC-SHA256 with random salt; plaintext passwords are never saved)</li>
+      <li>Order History, Order Items, and Delivery Status milestones</li>
+    </ul>
+
+    <h3>3. Data Security & Storage</h3>
+    <p>
+      All data resides in a local SQLite database file. No personal data, tracking cookies, or browsing analytics are transmitted to third parties, advertising networks, or external cloud providers.
+    </p>
+
+    <h3>4. Cookies & Session Management</h3>
+    <p>
+      The application utilizes a single standard HTTP session cookie to maintain your logged-in session, active cart stack, and CSRF token. No tracking, cross-site, or advertising cookies are utilized.
+    </p>
+  </div>
+</section>
+{% endblock %}

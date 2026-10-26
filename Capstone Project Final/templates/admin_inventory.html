@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Warehouse Stock Inventory — Staff Operations{% endblock %}
+
+{% block content %}
+<section style="max-width:980px; margin:0 auto;">
+  <div class="context-header">
+    <div>
+      <div style="display:flex; gap:var(--space-2); margin-bottom:var(--space-2);">
+        <span class="badge" style="background-color:var(--accent-inventory); color:var(--text-inverse); border:none;">STAFF OPERATIONS</span>
+        <span class="badge">ACID INVENTORY</span>
+      </div>
+      <h1 style="margin-bottom:var(--space-1);">Inventory Stock Levels</h1>
+      <p style="color:var(--text-muted); margin-bottom:0;">
+        Live inventory records stored in SQLite with strict <code>CHECK(Stock &gt;= 0)</code> constraints and atomic decrement on checkout.
+      </p>
+    </div>
+    <div class="context-header-meta">
+      TOTAL SKUs: {{ products|length }}
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>SKU / ID</th>
+          <th>Product Name</th>
+          <th style="text-align:right;">Unit Price</th>
+          <th style="text-align:center;">Physical Stock</th>
+          <th>Status</th>
+          <th style="text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:700;">SKU-{{ "%03d"|format(product.id) }}</td>
+            <td><strong>{{ product.name }}</strong></td>
+            <td style="text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums;">Rs {{ "%.2f"|format(product.price) }}</td>
+            <td style="text-align:center; font-family:var(--font-mono); font-weight:700; font-size:0.9375rem;">
+              {{ product.stock }}
+            </td>
+            <td>
+              {% if product.stock > 10 %}
+                <span class="stock-tag stock-available">Healthy ({{ product.stock }} units)</span>
+              {% elif product.stock > 0 %}
+                <span class="stock-tag" style="color:var(--accent-warn);">Low Stock ({{ product.stock }} units)</span>
+              {% else %}
+                <span class="stock-tag stock-out">Depleted (0 units)</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              <a href="/product/{{ product.id }}" class="btn btn-secondary" style="padding:2px 10px; font-size:0.75rem; min-height:28px;">
+                Inspect
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
